@@ -1,11 +1,76 @@
 import { create } from 'zustand';
-
+import { MMKV } from 'react-native-mmkv';
 import type {
   Conversation,
   Message,
 } from './types';
 
-//chat state
+ const storage = new MMKV();
+
+const CONVERSATIONS_KEY = 'conversations';
+const USER_KEY = 'user';
+
+const loadConversations = (): Conversation[] => {
+  try {
+    const storedConversations =
+      storage.getString(CONVERSATIONS_KEY);
+
+    if (!storedConversations) {
+      return [];
+    }
+
+    return JSON.parse(storedConversations);
+  } catch (error) {
+    console.log(
+      'Failed to load conversations:',
+      error,
+    );
+
+    return [];
+  }
+};
+
+const saveConversations = (
+  conversations: Conversation[],
+) => {
+  try {
+    storage.set(
+      CONVERSATIONS_KEY,
+      JSON.stringify(conversations),
+    );
+  } catch (error) {
+    console.log(
+      'Failed to save conversations:',
+      error,
+    );
+  }
+};
+
+const loadUser = () => {
+  try {
+    const storedUser = storage.getString(USER_KEY);
+
+    if (!storedUser) {
+      return {
+        isLoggedIn: false,
+        userName: '',
+      };
+    }
+
+    return JSON.parse(storedUser);
+  } catch (error) {
+    console.log(
+      'Failed to load user:',
+      error,
+    );
+
+    return {
+      isLoggedIn: false,
+      userName: '',
+    };
+  }
+};
+
 interface ChatState {
   isLoggedIn: boolean;
   userName: string;
@@ -29,99 +94,151 @@ interface ChatState {
   ) => void;
 }
 
-//user chat 
-export const useChatStore = create<ChatState>(set => ({
-  isLoggedIn: false,
+const savedUser = loadUser();
 
-  userName: '',
+export const useChatStore = create<ChatState>(
+  set => ({
+    isLoggedIn: savedUser.isLoggedIn,
+    userName: savedUser.userName,
 
-  conversations: [],
+    conversations: loadConversations(),
 
-  login: (userName: string) => {
-    set({
-      isLoggedIn: true,
-      userName,
-    });
-  },
+    login: (userName: string) => {
+      const user = {
+        isLoggedIn: true,
+        userName,
+      };
 
-  logout: () => {
-    set({
-      isLoggedIn: false,
-      userName: '',
-    });
-  },
+      storage.set(
+        USER_KEY,
+        JSON.stringify(user),
+      );
 
-  addConversation: (name: string) => {
-    const conversationId = Date.now().toString();
+      set(user);
+    },
 
-    const newConversation: Conversation = {
-      id: conversationId,
-      name,
-      messages: [],
-    };
+    logout: () => {
+    storage.delete(USER_KEY);
 
-    set(state => ({
-      conversations: [
-        ...state.conversations,
-        newConversation,
-      ],
-    }));
+      set({
+        isLoggedIn: false,
+        userName: '',
+      });
+    },
 
-    return conversationId;
-  },
+    addConversation: (name: string) => {
+      
+      const conversationId =
+        `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 9)}`;
 
-  addMessage: (
-    conversationId: string,
-    message: Message,
-  ) => {
-    set(state => ({
-      conversations: state.conversations.map(
-        conversation => {
-          if (conversation.id !== conversationId) {
-            return conversation;
-          }
+      // const newConversation: Conversation = {
+      //   id: conversationId,
+      //   name,
+      //   messages: [],
+      // };
 
-          return {
-            ...conversation,
+      set(state => {
+               const newConversation: Conversation = {
+          id: conversationId,
+          name,
+          userId: state.userName,
+          messages: [],
+        };
+        const conversations = [
+          ...state.conversations,
+          newConversation,
+        ];
 
-            messages: [
-              ...conversation.messages,
-              message,
-            ],
-          };
-        },
-      ),
-    }));
-  },
-  updateMessage: (
-    conversationId: string,
-    messageId: string,
-    text: string,
-  ) => {
-    set(state => ({
-      conversations: state.conversations.map(
-        conversation => {
-          if (conversation.id !== conversationId) {
-            return conversation;
-          }
+        saveConversations(conversations);
 
-          return {
-            ...conversation,
-            messages: conversation.messages.map(
-              message => {
-                if (message.id !== messageId) {
-                  return message;
-                }
+        return {
+          conversations,
+        };
+      });
 
-                return {
-                  ...message,
-                  text,
-                };
-              },
-            ),
-          };
-        },
-      ),
-    }));
-  },
-}));
+      return conversationId;
+    },
+
+    addMessage: (
+      conversationId: string,
+      message: Message,
+    ) => {
+      set(state => {
+        const conversations =
+          state.conversations.map(
+            conversation => {
+              if (
+                conversation.id !==
+                conversationId
+              ) {
+                return conversation;
+              }
+
+              return {
+                ...conversation,
+                messages: [
+                  ...conversation.messages,
+                  message,
+                ],
+              };
+            },
+          );
+
+        saveConversations(conversations);
+
+        return {
+          conversations,
+        };
+      });
+    },
+
+    updateMessage: (
+      conversationId: string,
+      messageId: string,
+      text: string,
+    ) => {
+      set(state => {
+        const conversations =
+          state.conversations.map(
+            conversation => {
+              if (
+                conversation.id !==
+                conversationId
+              ) {
+                return conversation;
+              }
+
+              return {
+                ...conversation,
+
+                messages:
+                  conversation.messages.map(
+                    message => {
+                      if (
+                        message.id !==
+                        messageId
+                      ) {
+                        return message;
+                      }
+
+                      return {
+                        ...message,
+                        text,
+                      };
+                    },
+                  ),
+              };
+            },
+          );
+
+        saveConversations(conversations);
+
+        return {
+          conversations,
+        };
+      });
+    },
+  }),
+);

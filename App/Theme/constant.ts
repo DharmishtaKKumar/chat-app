@@ -313,6 +313,4 @@ export default {
   FullWidth80: '80%',
   FullWidth90: '90%',
   forceInset: { top: 'always', bottom: 'never' },
-  lowHitSlop: { left: 5, right: 5, top: 5, bottom: 5 },
-  normalHitSlop: { left: 10, right: 10, top: 10, bottom: 10 },
 };

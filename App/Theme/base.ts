@@ -719,24 +719,5 @@ export default StyleSheet.create({
     right: CONSTANTS.Width8,
   },
 
-  cardShadow: {
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 1,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  primaryCardShadow: {
-    shadowColor: '#1C359F80',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+
 });

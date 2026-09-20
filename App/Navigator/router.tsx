@@ -5,7 +5,6 @@
  *   Version : v1.1
  */
 import React from "react";
-import { View, Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "../Src/Container/login";
 import ConversationList from "../Src/Container/conversation-list";
@@ -13,7 +12,13 @@ import Chat from '../Src/Container/chat';
 
 export type RootStackParamList = {
   Login: undefined;
+
   ConversationList: undefined;
+
+  Chat: {
+    conversationId: string;
+    conversationName: string;
+  };
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

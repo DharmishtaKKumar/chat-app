@@ -69,17 +69,21 @@ const CreateConversationModal: React.FC<AddConversationModalProps> = (props: Add
 
   // Function to handling button
   const _handlePrimaryButton = () => {
-    const isValid =
-      _validateName();
+    const isValid = _validateName();
 
     if (!isValid) {
       return;
     }
 
-    const name =
-      conversationName.trim();
-    props.onCreate(name);
+    const name = conversationName.trim();
+
+    const error = props.onCreate(name);
+
+    if (error) {
+      setConversationNameError(error);
+    }
   };
+
 
   // Function to handle the validating name
   const _validateName = () => {
@@ -183,6 +187,7 @@ const CreateConversationModal: React.FC<AddConversationModalProps> = (props: Add
                   autoCapitalize="words"
                   autoFocus={false}
                   maxLength={20}
+                  focusId={focusId}
                   onChangeText={setConversationName}
                   onBlur={_onBlurAnimation}
                   onFocus={() =>

@@ -27,6 +27,7 @@ type TextInputProps = {
   error?: string;
   editable?: boolean;
   multiline?: boolean;
+  inputRef?: React.RefObject<TextInput>;
   onFocus?: () => void;
   onBlur?: () => void;
   onChangeText?: (text: string) => void;
@@ -65,6 +66,8 @@ const CustomTextInput = (props: TextInputProps) => {
       >
         <TextInput
           value={props.value || ''}
+          style={[Styles.colorBlack, Styles.borderWidth1,Styles.borderColorBlackEel, Styles.borderRadius8]}
+               ref={props.inputRef}
           placeholder={props.placeHolder}
           editable={props.editable}
           autoCorrect={false}

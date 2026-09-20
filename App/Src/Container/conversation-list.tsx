@@ -4,7 +4,7 @@
  *   Integrations : null
  *   Version : v1.1
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -35,14 +35,32 @@ const ConversationList: React.FC = () => {
     const conversations = useChatStore(
         state => state.conversations,
     );
+    const userName = useChatStore(
+        state => state.userName,
+    );
+    const logout = useChatStore(
+        state => state.logout,
+    );
+
+    const myConversations = useMemo(
+        () => conversations.filter(
+            item => item.userId === userName,
+        ),
+        [conversations, userName],
+    );
 
     const addConversation = useChatStore(
         state => state.addConversation,
     );
 
-    /*
-     * Open an existing conversation
-     */
+    //Function to logout
+    const _handleLogout = () => {
+        logout();
+
+        navigation.replace('Login');
+    };
+
+    // Function to Open an existing conversation
     const _handleConversationPress = (
         item: Conversation,
     ) => {
@@ -52,18 +70,13 @@ const ConversationList: React.FC = () => {
         });
     };
 
-    /*
-     * Open create conversation modal
-     */
+    //Function to Open create conversation modal
     const _handleAddConversation = () => {
 
         setIsAddConversationModalVisible(true);
     };
 
-    /*
-     * Create and immediately open conversation
-     */
-
+    //Function to Create and immediately open conversation
     const _handleConversationCreateModal = (
         conversationName: string,
     ): string | null => {
@@ -73,7 +86,7 @@ const ConversationList: React.FC = () => {
             return 'Please enter the name';
         }
 
-        const isDuplicate = conversations.some(
+        const isDuplicate = myConversations.some(
             item =>
                 item.name.toLowerCase() ===
                 trimmedName.toLowerCase(),
@@ -96,10 +109,7 @@ const ConversationList: React.FC = () => {
         return null;
     };
 
-
-    /*
-     * Render conversation
-     */
+    //Function to Render conversation
     const _renderConversation = ({
         item,
     }: {
@@ -113,27 +123,27 @@ const ConversationList: React.FC = () => {
                 activeOpacity={0.7}>
 
 
-                    <Text
-                        style={[
-                            Styles.fontSize16,
-                            Styles.width288,
-                            Styles.lineHeight22,
-                            Styles.colorCynder,
-                            Styles.rubikMedium,
-                        ]}>
-                        {item.name}
-                    </Text>
+                <Text
+                    style={[
+                        Styles.fontSize16,
+                        Styles.width288,
+                        Styles.lineHeight22,
+                        Styles.colorCynder,
+                        Styles.rubikMedium,
+                    ]}>
+                    {item.name}
+                </Text>
 
 
 
-                 <Text
-                        style={[
-                            Styles.fontSize16,
-                            Styles.lineHeight22,
-                            Styles.colorCynder,
-                            Styles.rubikMedium,]}>
+                <Text
+                    style={[
+                        Styles.fontSize16,
+                        Styles.lineHeight22,
+                        Styles.colorCynder,
+                        Styles.rubikMedium,]}>
              ->
-                    </Text>
+                </Text>
 
             </TouchableOpacity>
         );
@@ -194,24 +204,24 @@ const ConversationList: React.FC = () => {
 
                             <TouchableOpacity
                                 style={[
-                                    Styles.backgroundColorCloudyGrey,
+                                    Styles.backgroundColorCedarRed,
                                     Styles.paddingHorizontal4,
-                                    Styles.paddingVertical4,
+                                    Styles.paddingVertical6,
                                     Styles.borderRadius8,
                                 ]}
                                 onPress={
-                                    _handleAddConversation
+                                    _handleLogout
                                 }
                                 activeOpacity={0.7}>
 
                                 <Text
                                     style={[
                                         Styles.fontSize12,
-                                        Styles.lineHeight13,
+                                        Styles.lineHeight16,
                                         Styles.rubicMedium,
                                         Styles.colorPureWhite,
                                     ]}>
-                                    + Add Conversation
+                                    LogOut
                                 </Text>
 
                             </TouchableOpacity>
@@ -219,52 +229,78 @@ const ConversationList: React.FC = () => {
                         </View>
 
                         {/* Conversation List */}
-<View style={[Styles.marginBottom64]}>
-                        <FlatList
-                            data={conversations}
-                            keyExtractor={item => item.id}
-                            renderItem={
-                                _renderConversation
-                            }
-                            showsVerticalScrollIndicator={
-                                false
-                            }
-                            bounces={false}
-                            overScrollMode="never"
-                            ListEmptyComponent={
-                                <View
-                                    style={[
-                                        Styles.center,
-                                        Styles.marginTop136,
-                                        Styles.paddingHorizontal31,
-                                    ]}>
-
-                                    <Text
+                        <View style={[Styles.marginBottom64]}>
+                            <FlatList
+                                data={myConversations}
+                                keyExtractor={item => item.id}
+                                renderItem={
+                                    _renderConversation
+                                }
+                                showsVerticalScrollIndicator={
+                                    false
+                                }
+                                bounces={false}
+                                overScrollMode="never"
+                                ListEmptyComponent={
+                                    <View
                                         style={[
-                                            Styles.fontSize16,
-                                            Styles.lineHeight16,
-                                            Styles.colorBlack,
-                                            Styles.rubikSemibold,
+                                            Styles.center,
+                                            Styles.marginTop136,
+                                            Styles.paddingHorizontal31,
                                         ]}>
-                                        No conversations found.
-                                    </Text>
 
-                                    <Text
-                                        style={[
-                                            Styles.fontSize16,
-                                            Styles.lineHeight16,
-                                            Styles.colorBlack,
-                                            Styles.rubikSemibold,
-                                            Styles.paddingTop8,
-                                        ]}>
-                                        Create a conversation.
-                                    </Text>
+                                        <Text
+                                            style={[
+                                                Styles.fontSize16,
+                                                Styles.lineHeight16,
+                                                Styles.colorBlack,
+                                                Styles.rubikSemibold,
+                                            ]}>
+                                            No conversations found.
+                                        </Text>
 
-                                </View>
-                            }
-                        />
-</View>
+                                        <Text
+                                            style={[
+                                                Styles.fontSize16,
+                                                Styles.lineHeight16,
+                                                Styles.colorBlack,
+                                                Styles.rubikSemibold,
+                                                Styles.paddingTop8,
+                                            ]}>
+                                            Create a conversation.
+                                        </Text>
+
+                                    </View>
+                                }
+                            />
+                        </View>
                     </View>
+                    <TouchableOpacity
+                        style={[
+                            Styles.backgroundColorCloudyGrey,
+                            Styles.marginHorizontal16,
+                            Styles.marginBottom24,
+                            Styles.paddingHorizontal16,
+                            Styles.paddingVertical12,
+                            Styles.borderRadius8,
+                        ]}
+                        onPress={
+                            _handleAddConversation
+                        }
+                        activeOpacity={0.7}>
+
+                        <Text
+                            style={[
+                                Styles.fontSize14,
+                                Styles.lineHeight18,
+                                Styles.rubicMedium,
+                                Styles.colorPureWhite,
+                                Styles.textAlignCenter
+                            ]}>
+                            + Add Conversation
+                        </Text>
+
+                    </TouchableOpacity>
 
                 </KeyboardAvoidingView>
 

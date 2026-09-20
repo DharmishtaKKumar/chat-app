@@ -37,8 +37,6 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = (props: PrimaryButtonProps) 
   const {
     disabled,
     loading,
-    sec_loading,
-    primary_loading,
     label,
     type,
     onPress,

@@ -2,9 +2,9 @@
  *   File : chat.tsx
  *   Description : chat display
  *   Integrations : null
- *   Version : v1.1
+ *   Version : v1.2
  */
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
     FlatList,
     KeyboardAvoidingView,
@@ -29,8 +29,9 @@ type ChatProps = NativeStackScreenProps<
 >;
 
 const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
-    const { conversationId, conversationName } = route.params;
 
+    const { conversationId, conversationName } = route.params;
+    const [isStreaming, setIsStreaming] = useState(false);
     const [messageText, setMessageText] = useState('');
 
     const flatListRef = useRef<FlatList>(null);
@@ -51,18 +52,17 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
 
     const messages = conversation?.messages ?? [];
 
-    const _scrollToBottom = () => {
-        setTimeout(() => {
-            flatListRef.current?.scrollToEnd({
-                animated: true,
-            });
-        }, 50);
-    }
+    const reversedMessages = useMemo(
+        () => [...messages].reverse(),
+        [messages],
+    );
 
-//Function Generate automated streaming reply
+    //Function Generate automated streaming reply
     const _startBotReply = async (
         userMessage: string,
     ) => {
+        setIsStreaming(true);
+
         const botMessageId =
             `${Date.now()}-${Math.random()
                 .toString(36)
@@ -75,7 +75,6 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
             timestamp: Date.now(),
         };
 
-        // Create empty bot message first
         addMessage(
             conversationId,
             botMessage,
@@ -97,14 +96,11 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
                 (chunk: string) => {
                     currentText += chunk;
 
-                    // Update the same bot message
                     updateMessage(
                         conversationId,
                         botMessageId,
                         currentText,
                     );
-
-                    _scrollToBottom();
                 },
             );
         } catch (error) {
@@ -118,35 +114,32 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
                 botMessageId,
                 'Unable to generate a response.',
             );
+        } finally {
+            setIsStreaming(false);
         }
     };
 
     //Function to handle send message
     const _handleSendMessage = () => {
+        if (isStreaming) {
+            return;
+        }
+
         const text = messageText.trim();
 
         if (!text) {
             return;
         }
 
-        const newMessage: Message = {
-            id:
-                `${Date.now()}-${Math.random()
-                    .toString(36)
-                    .substring(2, 9)}`,
+        const userMessage: Message = {
+            id: `${Date.now()}-user`,
             text,
             sender: 'user',
             timestamp: Date.now(),
         };
 
-        addMessage(
-            conversationId,
-            newMessage,
-        );
-
+        addMessage(conversationId, userMessage);
         setMessageText('');
-
-        _scrollToBottom();
 
         _startBotReply(text);
     };
@@ -163,14 +156,14 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
                 style={[
                     Styles.paddingHorizontal14, Styles.paddingVertical10, Styles.borderRadius16, Styles.marginBottom12, { maxWidth: '80%' },
                     isUser
-                        ? [Styles.alignSelfFlexEnd, Styles.backgroundColorCyanBlue]
+                        ? [Styles.alignSelfFlexEnd, Styles.backgroundIronsideGrey]
                         : [Styles.alignSelfFlexStart, Styles.backgroundColorLightSilver]
                 ]}>
                 <Text
                     style={[Styles.fontSize16, Styles.lineHeight22, Styles.rubicMedium, Styles.colorBlack,
                     isUser
-                        ? [Styles.colorDarkPrimary]
-                        : [Styles.colorSeaGreen],
+                        ? [Styles.colorPureWhite]
+                        : [Styles.borderColorSeaShellBlue],
                     ]}>
                     {item.text}
                 </Text>
@@ -203,12 +196,13 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
                     {/* Messages */}
                     <FlatList
                         ref={flatListRef}
-                        data={messages}
+                        data={reversedMessages}
+                        inverted
                         keyExtractor={item => item.id}
                         renderItem={_renderMessage}
                         contentContainerStyle={[
                             Styles.padding16,
-                            Styles.flexGrowOne,
+                                   Styles.flexGrowOne,
                         ]}
                         keyboardShouldPersistTaps="handled"
                         ListEmptyComponent={
@@ -248,7 +242,7 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
       label=""
       placeHolder="Type a message..."
       value={messageText}
-      editable={true}
+      editable={!isStreaming}
       multiline={true}
       returnKeyType="send"
       autoCapitalize="sentences"
@@ -270,6 +264,7 @@ const Chat: React.FC<ChatProps> = ({ route, navigation }) => {
       Styles.justifyCenter,
     ]}
     onPress={_handleSendMessage}
+    disabled={isStreaming}
     activeOpacity={0.7}
   >
     <Text

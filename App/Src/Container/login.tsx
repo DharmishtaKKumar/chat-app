@@ -7,12 +7,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import {
-  View,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TextInput,
+    View,
+    Text,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    TextInput,
 } from 'react-native';
 import { Styles } from "../../Theme";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,7 +20,11 @@ import CustomTextInput from "../Component/text-input";
 import { useNavigation } from '@react-navigation/native';
 import { useChatStore } from "../../Helper/store";
 import PrimaryButton from "../Component/primary-button";
-import type {RootStackParamList} from '../../Navigator/Router';
+import type { RootStackParamList } from '../../Navigator/Router';
+import type {
+    NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
+
 
 const Login: React.FC = () => {
     // useRef variables
@@ -34,16 +38,16 @@ const Login: React.FC = () => {
     const [passwordError, setPasswordError] = useState<string>('');
     const [focusId, setFocusId] = useState<string>('');
 
-  useEffect(() => {
-    setUserNameError('');
-  }, [userName]);
+    useEffect(() => {
+        setUserNameError('');
+    }, [userName]);
 
     useEffect(() => {
-    setPasswordError('');
-  }, [password]);
+        setPasswordError('');
+    }, [password]);
 
-  const navigation =
-  useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const navigation =
+        useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     // Function - handle blur
     const _onBlurAnimation = () => {
@@ -61,8 +65,8 @@ const Login: React.FC = () => {
         const is_valid = _validateInputs();
 
         if (is_valid == true) {
-             login(userName);
-    navigation.replace('ConversationList');
+            login(userName);
+            navigation.replace('ConversationList');
         } else {
             setApiLoading(false);
         }
@@ -109,62 +113,73 @@ const Login: React.FC = () => {
                             overScrollMode={'never'}
                         >
 
-                            <View>
+                            <View style={[Styles.justifyCenter]}>
                                 <View style={[Styles.alignSelfCenter, Styles.padding16]}>
                                     <Text style={[Styles.fontSize16, Styles.RubicBold, Styles.lineHeight18, Styles.colorBlack,]}>
                                         Login
                                     </Text>
                                 </View>
 
-                                <CustomTextInput
-                                    id="user_name"
-                                    prefix={null}
-                                    suffix={null}
-                                    label={'User Name'}
-                                    value={userName}
-                                    inputRef={userNameRef}
-                                    error={userNameError}
-                                    placeHolder="Enter nominee name"
-                                    editable={true}
-                                    focusId={focusId}
-                                    secureTextEntry={true}
-                                    returnKeyType="next"
-                                    keyboardType="default"
-                                    autoCapitalize="words"
-                                    autoFocus={false}
-                                    maxLength={20}
-                                    onChangeText={(val) => setUserName(val)}
-                                    onBlur={() => _onBlurAnimation()}
-                                    onFocus={() => _onFocusAnimation('firstName')}
-                                    autoCompleteType="none"
-                                    onSubmitEditing={() => password.current?.focus()}
-                                />
+                                <View style={[Styles.alignSelfCenter, Styles.paddingTop24]}>
+                                    <Text style={[Styles.fontSize20, Styles.RubicBold, Styles.lineHeight30, Styles.colorBlack,]}>
+                                        Here we start!
+                                    </Text>
+                                </View>
 
-                                <View style={[Styles.paddingTop8]}>
+                                <View style={[Styles.marginTop80]}>
                                     <CustomTextInput
-                                        id="pass_word"
+                                        id="user_name"
                                         prefix={null}
                                         suffix={null}
-                                        label={'Password'}
-                                        value={password}
-                                        inputRef={passwordRef}
-                                        error={passwordError}
-                                        placeHolder="Enter password"
+                                        label={'User Name'}
+                                        value={userName}
+                                        inputRef={userNameRef}
+                                        error={userNameError}
+                                        placeHolder="Enter your name"
                                         editable={true}
                                         focusId={focusId}
-                                        secureTextEntry={true}
-                                        returnKeyType="done"
+                                        secureTextEntry={false}
+                                        returnKeyType="next"
                                         keyboardType="default"
                                         autoCapitalize="words"
                                         autoFocus={false}
                                         maxLength={20}
-                                        onChangeText={(val) => setPassword(val)}
+                                        onChangeText={(val) => setUserName(val)}
                                         onBlur={() => _onBlurAnimation()}
-                                        onFocus={() => _onFocusAnimation('')}
+                                        onFocus={() => _onFocusAnimation('firstName')}
                                         autoCompleteType="none"
-                                        onSubmitEditing={() => passwordRef.current?.focus()}
+                                        onSubmitEditing={() => password.current?.focus()}
                                     />
+
+                                    <View style={[Styles.paddingTop8]}>
+                                        <CustomTextInput
+                                            id="pass_word"
+                                            prefix={null}
+                                            suffix={null}
+                                            label={'Password'}
+                                            value={password}
+                                            inputRef={passwordRef}
+                                            error={passwordError}
+                                            placeHolder="Enter password"
+                                            editable={true}
+                                            focusId={focusId}
+                                            secureTextEntry={false}
+                                            returnKeyType="done"
+                                            keyboardType="default"
+                                            autoCapitalize="words"
+                                            autoFocus={false}
+                                            maxLength={20}
+                                            onChangeText={(val) => setPassword(val)}
+                                            onBlur={() => _onBlurAnimation()}
+                                            onFocus={() => _onFocusAnimation('')}
+                                            autoCompleteType="none"
+                                            onSubmitEditing={() => passwordRef.current?.focus()
+                                            }
+                                        />
+                                    </View>
                                 </View>
+
+
                             </View>
                         </ScrollView>
                         <View style={[Styles.marginTop16, Styles.paddingBottom16]}>
